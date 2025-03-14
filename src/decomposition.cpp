@@ -53,7 +53,9 @@ Decomposition::paint_incremental()
 
     while (front <= back)
     {
-        int node = q[front++];
+        int node = q[front];
+        front++;
+
         int color = domains[node];
 
         for (auto ngh : g.inc[node])
@@ -61,8 +63,8 @@ Decomposition::paint_incremental()
             if (domains[ngh] == -1)
             {
                 domains[ngh] = color;
-                q[back + 1] = ngh;
                 back++;
+                q[back] = ngh;
             }
         }
     }
