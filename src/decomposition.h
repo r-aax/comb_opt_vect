@@ -8,12 +8,18 @@ class Decomposition
 
 public:
 
-    AreaGraph& g;
+    // graph
     int nodes_count { 0 };
+    int edges_count { 0 };
+    int** inc;
+    int** es;
+
+    // painting
     int colors_count { 0 };
     int* genotype;
     int* domains;
 
+    // queue
     int* q;
     int front { -1 };
     int back { -1 };
