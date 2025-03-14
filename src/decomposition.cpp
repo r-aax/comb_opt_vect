@@ -173,18 +173,26 @@ Decomposition::paint_incremental()
         print_vec(vd);
         print_mask(no_color);
 
+        __m512i vinc_off(N);
+        for (int i = 0; i < N; ++i) vinc_off[i] = (inc[vn[i]] - inc[0]);
+        cout << "vinc_off : ";
+        print_vec(vinc_off);
+
+        __m512i vnghs_count = _mm512_mask_i32gather_epi32(v0, no_color, vinc_off, inc[0], 1);
+        cout << "vnghs_count : ";
+        print_vec(vnghs_count);
+
         for (int c = 0; c < colors_count; ++c)
         {
             if (no_color & (1 << c))
             {
-                int n = vn[c];
-                int nghs_count = inc[n][0];
+                int nghs_count = vnghs_count[c];
 
-                domains[n] = c;
+                domains[vn[c]] = c;
 
                 for (int i = 0; i < nghs_count; ++i)
                 {
-                    int ngh = inc[n][i + 1];
+                    int ngh = inc[vn[c]][i + 1];
 
                     back[c]++;
                     q[c][back[c]] = ngh;

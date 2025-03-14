@@ -110,4 +110,12 @@ _mm512_mask_add_epi32(__m512i src, __mmask16 k, __m512i a, __m512i b)
     return r;
 }
 
+inline __m512i
+_mm512_mask_sub_epi32(__m512i src, __mmask16 k, __m512i a, __m512i b)
+{
+    __m512i r(N);
+    for (int i = 0; i < N; ++i) r[i] = (k & (1 << i)) ? (a[i] - b[i]) : src[i];
+    return r;
+}
+
 #endif
