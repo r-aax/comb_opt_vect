@@ -88,6 +88,9 @@ _mm512_cmp_epi32_mask(__m512i a, __m512i b, _MM_CMPINT_ENUM imm8)
     __mmask16 m = 0x0;
     switch (imm8)
     {
+        case _MM_CMPINT_LT:
+            for (int i = 0; i < N; ++i) if (a[i] < b[i]) m = m | (1 << i);
+            break;
         case _MM_CMPINT_LE:
             for (int i = 0; i < N; ++i) if (a[i] <= b[i]) m = m | (1 << i);
             break;
