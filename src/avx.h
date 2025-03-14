@@ -82,6 +82,18 @@ _mm512_mask_i32gather_epi32(__m512i src, __mmask16 k, __m512i vindex, void* base
     return r;
 }
 
+inline void
+_mm512_mask_i32scatter_epi32(void* base_addr, __mmask16 k, __m512i vindex, __m512i a, int scale)
+{
+    for (int i = 0; i < N; ++i)
+    {
+        if (k & (1 << i))
+        {
+            static_cast<int*>(base_addr)[scale * vindex[i]] = a[i];
+        }
+    }
+}
+
 inline __mmask16
 _mm512_cmp_epi32_mask(__m512i a, __m512i b, _MM_CMPINT_ENUM imm8)
 {
