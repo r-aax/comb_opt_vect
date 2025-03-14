@@ -1,4 +1,5 @@
-#pragma once
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <random>
 
@@ -62,3 +63,5 @@ inline bool randbool(double prob)
 {
     return rand01() < prob;
 }
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREA_GRAPH_H
+#define AREA_GRAPH_H
 
 #include <vector>
 
@@ -37,3 +38,5 @@ public:
     void
     print();
 };
+
+#endif

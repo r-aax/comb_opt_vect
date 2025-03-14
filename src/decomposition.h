@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DECOMPOSITION_H
+#define DECOMPOSITION_H
 
 #include <string>
 
@@ -24,3 +25,5 @@ public:
     void
     print(int count_in_row);
 };
+
+#endif
