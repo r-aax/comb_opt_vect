@@ -138,6 +138,14 @@ Decomposition::paint_incremental()
 
     // Optimized.
 
+    __m512i v0 = _mm512_set1_epi32(0);
+    __m512i v1 = _mm512_set1_epi32(1);
+    __m512i vqoff = _mm512_set_epi32(q[15] - q[0], q[14] - q[0], q[13] - q[0], q[12] - q[0],
+                                     q[11] - q[0], q[10] - q[0], q[9] - q[0],  q[8] - q[0],
+                                     q[7] - q[0],  q[6] - q[0],  q[5] - q[0],  q[4] - q[0],
+                                     q[3] - q[0],  q[2] - q[0],  q[1] - q[0],  0);
+    print_vec(vqoff);
+
     while (true)
     {
         __m512i vf = _mm512_loadu_epi32(front);
@@ -149,11 +157,21 @@ Decomposition::paint_incremental()
             break;
         }
 
+        __m512i voff = _mm512_mask_add_epi32(v0, cont, vqoff, vf);
+        __m512i vn = _mm512_mask_i32gather_epi32(v0, cont, voff, q[0], 1);
+
+        cout << endl << "iter" << endl;
+        print_mask(cont);
+        print_vec(vqoff);
+        print_vec(vf);
+        print_vec(voff);
+        print_vec(vn);
+
         for (int c = 0; c < colors_count; ++c)
         {
             if (front[c] <= back[c])
             {
-                int n = q[c][front[c]];
+                int n = vn[c];
 
                 front[c]++;
 

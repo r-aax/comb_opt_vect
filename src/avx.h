@@ -37,10 +37,36 @@ print_mask(__mmask16 m)
 }
 
 inline __m512i
+_mm512_set_epi32(int e15, int e14, int e13, int e12, int e11, int e10, int e9, int e8,
+                 int e7, int e6, int e5, int e4, int e3, int e2, int e1, int e0)
+{
+    __m512i r { e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15 };
+    return r;
+}
+
+inline __m512i
+_mm512_set1_epi32(int a)
+{
+    __m512i r { a, a, a, a, /**/ a, a, a, a, /**/ a, a, a, a, /**/ a, a, a, a };
+    return r;
+}
+
+inline __m512i
 _mm512_loadu_epi32(void* mem_addr)
 {
     __m512i r(N);
     for (int i = 0; i < N; ++i) r[i] = static_cast<int*>(mem_addr)[i];
+    return r;
+}
+
+inline __m512i
+_mm512_mask_i32gather_epi32(__m512i src, __mmask16 k, __m512i vindex, void* base_addr, int scale)
+{
+    __m512i r(N);
+    for (int i = 0; i < N; ++i)
+    {
+        r[i] = (k & (1 << i)) ? static_cast<int*>(base_addr)[scale * vindex[i]] : src[i];
+    }
     return r;
 }
 
@@ -59,6 +85,14 @@ _mm512_cmp_epi32_mask(__m512i a, __m512i b, _MM_CMPINT_ENUM imm8)
             break;
     }
     return m;
+}
+
+inline __m512i
+_mm512_mask_add_epi32(__m512i src, __mmask16 k, __m512i a, __m512i b)
+{
+    __m512i r(N);
+    for (int i = 0; i < N; ++i) r[i] = (k & (1 << i)) ? (a[i] + b[i]) : src[i];
+    return r;
 }
 
 #endif
