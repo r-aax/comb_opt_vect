@@ -13,15 +13,14 @@ Decomposition::Decomposition(AreaGraph& g_,
     : g { g_ },
       nodes_count { g.nodes_count() },
       colors_count { colors_count_ },
+      genotype(colors_count),
       nodes_colors(nodes_count)
 {
-    genotype.clear();
-
     for (int i = 0; i < colors_count; ++i)
     {
         int r = randint(static_cast<int>(nodes_count));
 
-        genotype.push_back(r);
+        genotype[i] = r;
     }
 }
 
