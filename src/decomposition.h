@@ -20,9 +20,9 @@ public:
     int* domains;
 
     // queue
-    int* q;
-    int front { -1 };
-    int back { -1 };
+    int** q;
+    int* front;
+    int* back;
 
     Decomposition(AreaGraph& g_,
                   int colors_count_);

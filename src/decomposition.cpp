@@ -30,76 +30,109 @@ Decomposition::Decomposition(AreaGraph& g,
         es[i][1] = g.es[i][1];
     }
 
+    // painting
     genotype = new int[colors_count];
-
     for (int i = 0; i < colors_count; ++i)
     {
         int r = randint(static_cast<int>(nodes_count));
-
         genotype[i] = r;
     }
-
     domains = new int[nodes_count];
-    q = new int[nodes_count];
+
+    // queue
+    q = new int*[colors_count];
+    for (int i = 0; i < colors_count; ++i)
+    {
+        q[i] = new int[nodes_count];
+    }
+    front = new int[colors_count];
+    back = new int[colors_count];
 }
 
 Decomposition::~Decomposition()
 {
+    // graph
     for (int i = 0; i < nodes_count; ++i)
     {
         delete [] inc[i];
     }
     delete [] inc;
-
     for (int i = 0; i < edges_count; ++i)
     {
         delete [] es[i];
     }
     delete [] es;
 
+    // painting
     delete [] genotype;
     delete [] domains;
+
+    // queue
+    for (int i = 0; i < colors_count; ++i)
+    {
+        delete [] q[i];
+    }
     delete [] q;
+    delete [] front;
+    delete [] back;
 }
 
 void
 Decomposition::paint_incremental()
 {
-    for (int i = 0; i < nodes_count; ++i)
+    for (int n = 0; n < nodes_count; ++n)
     {
-        domains[i] = -1;
+        domains[n] = -1;
     }
 
-    for (int i = 0; i < colors_count; ++i)
+    for (int c = 0; c < colors_count; ++c)
     {
-        int ni = genotype[i];
-
-        domains[ni] = i;
-        q[i] = ni;
+        int n = genotype[c];
+        q[c][0] = n;
+        front[c] = 0;
+        back[c] = 0;
     }
 
-    front = 0;
-    back = colors_count - 1;
+#if 1
 
-    while (front <= back)
+    // Not optimized.
+
+    bool cont = true;
+
+    while (cont)
     {
-        int node = q[front];
-        front++;
+        cont = false;
 
-        int color = domains[node];
-
-        for (int i = 0; i < inc[node][0]; ++i)
+        for (int c = 0; c < colors_count; ++c)
         {
-            int ngh = inc[node][i + 1];
-
-            if (domains[ngh] == -1)
+            if (front[c] <= back[c])
             {
-                domains[ngh] = color;
-                back++;
-                q[back] = ngh;
+                cont = true;
+            }
+
+            int n = q[c][front[c]];
+
+            front[c]++;
+
+            if (domains[n] == -1)
+            {
+                int nghs_count = inc[n][0];
+
+                domains[n] = c;
+
+                for (int i = 0; i < nghs_count; ++i)
+                {
+                    int ngh = inc[n][i + 1];
+
+                    back[c]++;
+                    q[c][back[c]] = ngh;
+                }
             }
         }
     }
+
+#endif
+
 }
 
 void
@@ -112,7 +145,14 @@ Decomposition::print(int count_in_row)
             cout << endl;
         }
 
-        cout << " " << std::hex << domains[i];
+        if (domains[i] < 0)
+        {
+            cout << " " << '.';
+        }
+        else
+        {
+            cout << " " << std::hex << domains[i];
+        }
     }
 
     cout << endl;
