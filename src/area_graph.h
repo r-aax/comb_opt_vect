@@ -4,70 +4,36 @@
 
 using namespace std;
 
-/// <summary>
-/// 
-/// </summary>
 class AreaGraph
 {
 
 public:
 
-    /// <summary>
-    /// 
-    /// </summary>
-    vector<vector<size_t>> inc;
+    vector<vector<int>> inc;
+    vector<vector<int>> es;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    vector<vector<size_t>> es;
-
-    /// <summary>
-    /// 
-    /// </summary>
     AreaGraph();
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    inline size_t
+    inline int
     nodes_count() const
     {
         return inc.size();
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    inline size_t
+    inline int
     edges_count() const
     {
         return es.size();
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="a"></param>
-    /// <param name="b"></param>
     void
-    link_two_nodes(size_t a,
-                   size_t b);
+    link_two_nodes(int a,
+                   int b);
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="rows"></param>
-    /// <param name="cols"></param>
     void
-    init_from_rectangular_area(size_t rows,
-                               size_t cols);
+    init_from_rectangular_area(int rows,
+                               int cols);
 
-    /// <summary>
-    /// 
-    /// </summary>
     void
     print();
 };

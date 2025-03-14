@@ -9,7 +9,7 @@
 using namespace std;
 
 Decomposition::Decomposition(AreaGraph& g_,
-                             size_t colors_count_)
+                             int colors_count_)
     : g { g_ },
       nodes_count { g.nodes_count() },
       colors_count { colors_count_ },
@@ -17,7 +17,7 @@ Decomposition::Decomposition(AreaGraph& g_,
 {
     genotype.clear();
 
-    for (size_t i = 0; i < colors_count; ++i)
+    for (int i = 0; i < colors_count; ++i)
     {
         int r = randint(static_cast<int>(nodes_count));
 
@@ -28,16 +28,16 @@ Decomposition::Decomposition(AreaGraph& g_,
 void
 Decomposition::paint_incremental()
 {
-    for (size_t i = 0; i < nodes_count; ++i)
+    for (int i = 0; i < nodes_count; ++i)
     {
         nodes_colors[i] = -1;
     }
 
-    deque<size_t> q;
+    deque<int> q;
 
-    for (size_t i = 0; i < colors_count; ++i)
+    for (int i = 0; i < colors_count; ++i)
     {
-        size_t ni = genotype[i];
+        int ni = genotype[i];
 
         nodes_colors[ni] = i;
         q.push_back(ni);
@@ -45,7 +45,7 @@ Decomposition::paint_incremental()
 
     while (!q.empty())
     {
-        size_t node = q.front();
+        int node = q.front();
         int color = nodes_colors[node];
 
         q.pop_front();
@@ -62,7 +62,7 @@ Decomposition::paint_incremental()
 }
 
 void
-Decomposition::print(size_t count_in_row)
+Decomposition::print(int count_in_row)
 {
     for (int i = 0; i < nodes_count; ++i)
     {

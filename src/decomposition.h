@@ -10,17 +10,17 @@ class Decomposition
 public:
 
     AreaGraph& g;
-    size_t nodes_count { 0 };
-    size_t colors_count { 0 };
-    vector<size_t> genotype;
+    int nodes_count { 0 };
+    int colors_count { 0 };
+    vector<int> genotype;
     vector<int> nodes_colors;
 
     Decomposition(AreaGraph& g_,
-                  size_t colors_count_);
+                  int colors_count_);
 
     void
     paint_incremental();
 
     void
-    print(size_t count_in_row);
+    print(int count_in_row);
 };
