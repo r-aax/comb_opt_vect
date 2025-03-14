@@ -12,11 +12,11 @@ public:
     int nodes_count { 0 };
     int colors_count { 0 };
     int* genotype;
-    int* nodes_colors;
+    int* domains;
 
     int* q;
-    int q_front { -1 };
-    int q_back { -1 };
+    int front { -1 };
+    int back { -1 };
 
     Decomposition(AreaGraph& g_,
                   int colors_count_);

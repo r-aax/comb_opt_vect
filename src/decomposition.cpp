@@ -1,7 +1,6 @@
 #include "decomposition.h"
 
 #include <iostream>
-#include <deque>
 
 #include "utils.h"
 
@@ -22,14 +21,14 @@ Decomposition::Decomposition(AreaGraph& g_,
         genotype[i] = r;
     }
 
-    nodes_colors = new int[nodes_count];
+    domains = new int[nodes_count];
     q = new int[nodes_count];
 }
 
 Decomposition::~Decomposition()
 {
     delete [] genotype;
-    delete [] nodes_colors;
+    delete [] domains;
     delete [] q;
 }
 
@@ -38,32 +37,32 @@ Decomposition::paint_incremental()
 {
     for (int i = 0; i < nodes_count; ++i)
     {
-        nodes_colors[i] = -1;
+        domains[i] = -1;
     }
 
     for (int i = 0; i < colors_count; ++i)
     {
         int ni = genotype[i];
 
-        nodes_colors[ni] = i;
+        domains[ni] = i;
         q[i] = ni;
     }
 
-    q_front = 0;
-    q_back = colors_count - 1;
+    front = 0;
+    back = colors_count - 1;
 
-    while (q_front <= q_back)
+    while (front <= back)
     {
-        int node = q[q_front++];
-        int color = nodes_colors[node];
+        int node = q[front++];
+        int color = domains[node];
 
         for (auto ngh : g.inc[node])
         {
-            if (nodes_colors[ngh] == -1)
+            if (domains[ngh] == -1)
             {
-                nodes_colors[ngh] = color;
-                q[q_back + 1] = ngh;
-                q_back++;
+                domains[ngh] = color;
+                q[back + 1] = ngh;
+                back++;
             }
         }
     }
@@ -79,7 +78,7 @@ Decomposition::print(int count_in_row)
             cout << endl;
         }
 
-        cout << " " << nodes_colors[i];
+        cout << " " << std::hex << domains[i];
     }
 
     cout << endl;
