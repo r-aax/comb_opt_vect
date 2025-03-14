@@ -14,7 +14,6 @@ Decomposition::Decomposition(AreaGraph& g_,
       colors_count { colors_count_ }
 {
     genotype = new int[colors_count];
-    nodes_colors = new int[nodes_count];
 
     for (int i = 0; i < colors_count; ++i)
     {
@@ -22,12 +21,16 @@ Decomposition::Decomposition(AreaGraph& g_,
 
         genotype[i] = r;
     }
+
+    nodes_colors = new int[nodes_count];
+    q = new int[nodes_count];
 }
 
 Decomposition::~Decomposition()
 {
     delete [] genotype;
     delete [] nodes_colors;
+    delete [] q;
 }
 
 void
@@ -38,29 +41,29 @@ Decomposition::paint_incremental()
         nodes_colors[i] = -1;
     }
 
-    deque<int> q;
-
     for (int i = 0; i < colors_count; ++i)
     {
         int ni = genotype[i];
 
         nodes_colors[ni] = i;
-        q.push_back(ni);
+        q[i] = ni;
     }
 
-    while (!q.empty())
-    {
-        int node = q.front();
-        int color = nodes_colors[node];
+    q_front = 0;
+    q_back = colors_count - 1;
 
-        q.pop_front();
+    while (q_front <= q_back)
+    {
+        int node = q[q_front++];
+        int color = nodes_colors[node];
 
         for (auto ngh : g.inc[node])
         {
             if (nodes_colors[ngh] == -1)
             {
                 nodes_colors[ngh] = color;
-                q.push_back(ngh);
+                q[q_back + 1] = ngh;
+                q_back++;
             }
         }
     }
