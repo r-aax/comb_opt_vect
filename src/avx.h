@@ -59,6 +59,18 @@ _mm512_loadu_epi32(void* mem_addr)
     return r;
 }
 
+inline void
+_mm512_storeu_epi32(void* mem_addr, __m512i a)
+{
+    for (int i = 0; i < N; ++i) static_cast<int*>(mem_addr)[i] = a[i];
+}
+
+inline void
+_mm512_mask_storeu_epi32(void* mem_addr, __mmask16 k, __m512i a)
+{
+    for (int i = 0; i < N; ++i) if (k & (1 << i)) static_cast<int*>(mem_addr)[i] = a[i];
+}
+
 inline __m512i
 _mm512_mask_i32gather_epi32(__m512i src, __mmask16 k, __m512i vindex, void* base_addr, int scale)
 {

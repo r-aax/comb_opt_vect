@@ -144,7 +144,6 @@ Decomposition::paint_incremental()
                                      q[11] - q[0], q[10] - q[0], q[9] - q[0],  q[8] - q[0],
                                      q[7] - q[0],  q[6] - q[0],  q[5] - q[0],  q[4] - q[0],
                                      q[3] - q[0],  q[2] - q[0],  q[1] - q[0],  0);
-    print_vec(vqoff);
 
     while (true)
     {
@@ -162,9 +161,11 @@ Decomposition::paint_incremental()
 
         cout << endl << "iter" << endl;
         print_mask(cont);
-        print_vec(vqoff);
+        cout << "vf : ";
         print_vec(vf);
+        cout << "voff : ";
         print_vec(voff);
+        cout << "vn : ";
         print_vec(vn);
 
         for (int c = 0; c < colors_count; ++c)
@@ -172,8 +173,6 @@ Decomposition::paint_incremental()
             if (front[c] <= back[c])
             {
                 int n = vn[c];
-
-                front[c]++;
 
                 if (domains[n] == -1)
                 {
@@ -191,6 +190,9 @@ Decomposition::paint_incremental()
                 }
             }
         }
+
+        vf = _mm512_mask_add_epi32(v0, cont, vf, v1);
+        _mm512_mask_storeu_epi32(front, cont, vf);
     }
 
 #endif
