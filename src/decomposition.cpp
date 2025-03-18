@@ -184,19 +184,44 @@ Decomposition::paint_incremental()
         cout << "vinc_off : ";
         print_vec(vinc_off);
 
+        _mm512_mask_i32scatter_epi32(domains, is_no_color, vn, vc, 1);
+
         __m512i vnghs_count = _mm512_mask_i32gather_epi32(v0, is_no_color, vinc_off, inc[0], 1);
         cout << "vnghs_count : ";
         print_vec(vnghs_count);
 
-        _mm512_mask_i32scatter_epi32(domains, is_no_color, vn, vc, 1);
+        __m512i vj = v1;
+        __mmask16 is_ngh = _mm512_mask_cmp_epi32_mask(is_no_color, vj, vnghs_count, _MM_CMPINT_LE);
+        cout << "is_ngh : ";
+        print_mask(is_ngh);
+        int j = 1;
 
+        while (is_ngh)
+        {
+            for (int c = 0; c < colors_count; ++c)
+            {
+                if (is_ngh & (1 << c))
+                {
+                    int ngh = inc[vn[c]][j];
+
+                    back[c]++;
+                    q[c][back[c]] = ngh;
+                }
+            }
+
+            vj = _mm512_add_epi32(vj, v1);
+            ++j;
+            is_ngh = _mm512_mask_cmp_epi32_mask(is_no_color, vj, vnghs_count, _MM_CMPINT_LE);
+            cout << "is_ngh : ";
+            print_mask(is_ngh);
+        }
+
+#if 0
         for (int c = 0; c < colors_count; ++c)
         {
             if (is_no_color & (1 << c))
             {
-                int nghs_count = vnghs_count[c];
-
-                for (int i = 0; i < nghs_count; ++i)
+                for (int i = 0; i < vnghs_count[c]; ++i)
                 {
                     int ngh = inc[vn[c]][i + 1];
 
@@ -205,6 +230,7 @@ Decomposition::paint_incremental()
                 }
             }
         }
+#endif
 
         vf = _mm512_mask_add_epi32(vf, is_q, vf, v1);
     }

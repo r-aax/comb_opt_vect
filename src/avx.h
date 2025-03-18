@@ -95,16 +95,16 @@ _mm512_mask_i32scatter_epi32(void* base_addr, __mmask16 k, __m512i vindex, __m51
 }
 
 inline __mmask16
-_mm512_cmp_epi32_mask(__m512i a, __m512i b, _MM_CMPINT_ENUM imm8)
+_mm512_mask_cmp_epi32_mask(__mmask16 k1, __m512i a, __m512i b, _MM_CMPINT_ENUM imm8)
 {
     __mmask16 m = 0x0;
     switch (imm8)
     {
         case _MM_CMPINT_LT:
-            for (int i = 0; i < N; ++i) if (a[i] < b[i]) m = m | (1 << i);
+            for (int i = 0; i < N; ++i) if (k1 & (1 << i)) if (a[i] < b[i]) m = m | (1 << i);
             break;
         case _MM_CMPINT_LE:
-            for (int i = 0; i < N; ++i) if (a[i] <= b[i]) m = m | (1 << i);
+            for (int i = 0; i < N; ++i) if (k1 & (1 << i)) if (a[i] <= b[i]) m = m | (1 << i);
             break;
         default:
             cout << "Internal error !!!" << endl;
@@ -114,12 +114,25 @@ _mm512_cmp_epi32_mask(__m512i a, __m512i b, _MM_CMPINT_ENUM imm8)
     return m;
 }
 
+inline __mmask16
+_mm512_cmp_epi32_mask(__m512i a, __m512i b, _MM_CMPINT_ENUM imm8)
+{
+    return _mm512_mask_cmp_epi32_mask(0xFFFF, a, b, imm8);
+}
+
 inline __m512i
 _mm512_mask_add_epi32(__m512i src, __mmask16 k, __m512i a, __m512i b)
 {
     __m512i r(N);
     for (int i = 0; i < N; ++i) r[i] = (k & (1 << i)) ? (a[i] + b[i]) : src[i];
     return r;
+}
+
+inline __m512i
+_mm512_add_epi32(__m512i a, __m512i b)
+{
+    __m512i z(N);
+    return _mm512_mask_add_epi32(z, 0xFFFF, a, b);
 }
 
 inline __m512i
