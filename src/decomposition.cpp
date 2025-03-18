@@ -23,6 +23,11 @@ Decomposition::Decomposition(AreaGraph& g,
             inc[i][j + 1] = g.inc[i][j];
         }
     }
+    inc_off = new int[nodes_count];
+    for (int i = 0; i < nodes_count; ++i)
+    {
+        inc_off[i] = inc[i] - inc[0];
+    }
     es = new int*[edges_count];
     for (int i = 0; i < edges_count; ++i)
     {
@@ -58,6 +63,7 @@ Decomposition::~Decomposition()
         delete [] inc[i];
     }
     delete [] inc;
+    delete [] inc_off;
     for (int i = 0; i < edges_count; ++i)
     {
         delete [] es[i];
@@ -174,8 +180,7 @@ Decomposition::paint_incremental()
         print_vec(vd);
         print_mask(no_color);
 
-        __m512i vinc_off(N);
-        for (int i = 0; i < N; ++i) vinc_off[i] = (inc[vn[i]] - inc[0]);
+        __m512i vinc_off = _mm512_mask_i32gather_epi32(v0, no_color, vn, inc_off, 1);
         cout << "vinc_off : ";
         print_vec(vinc_off);
 
