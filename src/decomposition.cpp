@@ -156,20 +156,20 @@ Decomposition::paint_incremental()
     while (true)
     {
         __m512i vb = _mm512_loadu_epi32(back);
-        __mmask16 cont = _mm512_cmp_epi32_mask(vf, vb, _MM_CMPINT_LE);
+        __mmask16 is_q = _mm512_cmp_epi32_mask(vf, vb, _MM_CMPINT_LE);
 
-        if (!cont)
+        if (!is_q)
         {
             break;
         }
 
-        __m512i voff = _mm512_mask_add_epi32(v0, cont, vqoff, vf);
-        __m512i vn = _mm512_mask_i32gather_epi32(v0, cont, voff, q[0], 1);
-        __m512i vd = _mm512_mask_i32gather_epi32(v0, cont, vn, domains, 1);
-        __mmask16 no_color = _mm512_cmp_epi32_mask(vd, v0, _MM_CMPINT_LT);
+        __m512i voff = _mm512_mask_add_epi32(v0, is_q, vqoff, vf);
+        __m512i vn = _mm512_mask_i32gather_epi32(v0, is_q, voff, q[0], 1);
+        __m512i vd = _mm512_mask_i32gather_epi32(v0, is_q, vn, domains, 1);
+        __mmask16 is_no_color = _mm512_cmp_epi32_mask(vd, v0, _MM_CMPINT_LT);
 
         cout << endl << "iter" << endl;
-        print_mask(cont);
+        print_mask(is_q);
         cout << "vf : ";
         print_vec(vf);
         cout << "voff : ";
@@ -178,21 +178,21 @@ Decomposition::paint_incremental()
         print_vec(vn);
         cout << "vd : ";
         print_vec(vd);
-        print_mask(no_color);
+        print_mask(is_no_color);
 
-        __m512i vinc_off = _mm512_mask_i32gather_epi32(v0, no_color, vn, inc_off, 1);
+        __m512i vinc_off = _mm512_mask_i32gather_epi32(v0, is_no_color, vn, inc_off, 1);
         cout << "vinc_off : ";
         print_vec(vinc_off);
 
-        __m512i vnghs_count = _mm512_mask_i32gather_epi32(v0, no_color, vinc_off, inc[0], 1);
+        __m512i vnghs_count = _mm512_mask_i32gather_epi32(v0, is_no_color, vinc_off, inc[0], 1);
         cout << "vnghs_count : ";
         print_vec(vnghs_count);
 
-        _mm512_mask_i32scatter_epi32(domains, no_color, vn, vc, 1);
+        _mm512_mask_i32scatter_epi32(domains, is_no_color, vn, vc, 1);
 
         for (int c = 0; c < colors_count; ++c)
         {
-            if (no_color & (1 << c))
+            if (is_no_color & (1 << c))
             {
                 int nghs_count = vnghs_count[c];
 
@@ -206,7 +206,7 @@ Decomposition::paint_incremental()
             }
         }
 
-        vf = _mm512_mask_add_epi32(vf, cont, vf, v1);
+        vf = _mm512_mask_add_epi32(vf, is_q, vf, v1);
     }
 
 #endif
