@@ -198,11 +198,14 @@ Decomposition::paint_incremental()
 
         while (is_ngh)
         {
+            __m512i v_loc_off = _mm512_add_epi32(vinc_off, vj);
+            __m512i vngh = _mm512_mask_i32gather_epi32(v0, is_ngh, v_loc_off, inc[0], 1);
+
             for (int c = 0; c < colors_count; ++c)
             {
                 if (is_ngh & (1 << c))
                 {
-                    int ngh = inc[vn[c]][j];
+                    int ngh = vngh[c];//inc[vn[c]][j];
 
                     back[c]++;
                     q[c][back[c]] = ngh;
@@ -215,22 +218,6 @@ Decomposition::paint_incremental()
             cout << "is_ngh : ";
             print_mask(is_ngh);
         }
-
-#if 0
-        for (int c = 0; c < colors_count; ++c)
-        {
-            if (is_no_color & (1 << c))
-            {
-                for (int i = 0; i < vnghs_count[c]; ++i)
-                {
-                    int ngh = inc[vn[c]][i + 1];
-
-                    back[c]++;
-                    q[c][back[c]] = ngh;
-                }
-            }
-        }
-#endif
 
         vf = _mm512_mask_add_epi32(vf, is_q, vf, v1);
     }
