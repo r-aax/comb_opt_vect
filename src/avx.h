@@ -86,7 +86,10 @@ mm512_mask_i32gather_epi32(__m512i src,
     __m512i r(N);
     for (int i = 0; i < N; ++i)
     {
-        r[i] = (k & (1 << i)) ? static_cast<int*>(base_addr)[scale * vindex[i]] : src[i];
+        r[i] =
+    	    (k & (1 << i))
+    	    ? *static_cast<int*>(static_cast<void*>(static_cast<char*>(base_addr) + vindex[i] * scale))
+    	    : src[i];
     }
     return r;
 }
@@ -107,7 +110,7 @@ mm512_mask_i32scatter_epi32(void* base_addr,
     {
         if (k & (1 << i))
         {
-            static_cast<int*>(base_addr)[scale * vindex[i]] = a[i];
+	    *static_cast<int*>(static_cast<void*>(static_cast<char*>(base_addr) + vindex[i] * scale)) = a[i];
         }
     }
 }

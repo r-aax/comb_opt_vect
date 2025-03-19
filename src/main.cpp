@@ -39,11 +39,11 @@ main(int argc, char** argv)
 {
     srand(static_cast<unsigned int>(time({})));
 
-    int start = (argc == 1) ? 20 : atoi(argv[1]);
+    int start = (argc == 1) ? 1020 : atoi(argv[1]);
 
     cout << "start = " << start << endl;
 
-    for (int side = start; side <= 1000; side += 20)
+    for (int side = start; side <= 2000; side += 20)
     {
         check_side(side);
     }
