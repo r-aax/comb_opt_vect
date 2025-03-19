@@ -203,15 +203,21 @@ Decomposition::paint_incremental()
 
             vb = _mm512_mask_add_epi32(vb, is_ngh, vb, v1);
 
-            for (int c = 0; c < colors_count; ++c)
-            {
-                if (is_ngh & (1 << c))
-                {
-                    int ngh = vngh[c];//inc[vn[c]][j];
+            __m512i voff2 = _mm512_mask_add_epi32(v0, is_ngh, vqoff, vb);
 
-                    q[c][vb[c]] = ngh;
-                }
-            }
+            _mm512_mask_i32scatter_epi32(q[0], is_ngh, voff2, vngh, 1);
+            //_mm512_mask_i32gather_epi32(v0, is_q, voff, q[0], 1);
+
+
+            //for (int c = 0; c < colors_count; ++c)
+            //{
+              //  if (is_ngh & (1 << c))
+                //{
+                  //  int ngh = vngh[c];//inc[vn[c]][j];
+
+                    //q[c][vb[c]] = ngh;
+                //}
+            //}
 
             vj = _mm512_add_epi32(vj, v1);
             ++j;
