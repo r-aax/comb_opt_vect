@@ -151,19 +151,13 @@ Decomposition::paint_incremental()
     __m512i v0 = _mm512_set1_epi32(0);
     __m512i v1 = _mm512_set1_epi32(1);
     __m512i vc = _mm512_set_epi32(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
-    __m512i vq_off = _mm512_loadu_epi32(q_off);
     __m512i vf = _mm512_loadu_epi32(front);
     __m512i vb = _mm512_loadu_epi32(back);
+    __m512i vq_off = _mm512_loadu_epi32(q_off);
+    __mmask16 is_q = _mm512_cmp_epi32_mask(vf, vb, _MM_CMPINT_LE);
 
-    while (true)
+    while (is_q)
     {
-        __mmask16 is_q = _mm512_cmp_epi32_mask(vf, vb, _MM_CMPINT_LE);
-
-        if (!is_q)
-        {
-            break;
-        }
-
         __m512i voff = _mm512_mask_add_epi32(v0, is_q, vq_off, vf);
         __m512i vn = _mm512_mask_i32gather_epi32(v0, is_q, voff, q[0], 1);
         __m512i vd = _mm512_mask_i32gather_epi32(v0, is_q, vn, domains, 1);
@@ -195,6 +189,7 @@ Decomposition::paint_incremental()
         }
 
         vf = _mm512_mask_add_epi32(vf, is_q, vf, v1);
+        is_q = _mm512_cmp_epi32_mask(vf, vb, _MM_CMPINT_LE);
     }
 
 #endif
