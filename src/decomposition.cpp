@@ -155,7 +155,7 @@ Decomposition::paint_incremental()
 #define GTH(S, M, OFF, A) _mm512_mask_i32gather_epi32(S, M, OFF, A, 1)
 #define GTH2(S, M, OFF1, OFF2, A) GTH(S, M, ADD(S, M, OFF1, OFF2), A)
 #define SCT(A, M, OFF, V) _mm512_mask_i32scatter_epi32(A, M, OFF, V, 1)
-#define SCT2(A, M, OFF1, OFF2, V) SCT(A, M, ADD(v0, M, OFF1, OFF1), V)
+#define SCT2(A, M, OFF1, OFF2, V) SCT(A, M, ADD(v0, M, OFF1, OFF2), V)
 
     // Optimized.
 
@@ -199,7 +199,7 @@ Decomposition::paint_incremental()
 
                 vb = ADD(vb, is_ngh, vb, v1);
 
-                SCT(q[0], is_ngh, ADD(v0, is_ngh, vqoff, vb), vngh);
+                SCT2(q[0], is_ngh, vqoff, vb, vngh);
 
                 vj = ADD(v0, is_ngh, vj, v1);
                 is_ngh = CMPLE(is_ngh, vj, vcnt);
