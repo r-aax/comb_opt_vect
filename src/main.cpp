@@ -3,7 +3,7 @@
 
 int main()
 {
-    int side = 20;
+    int side = 40;
     AreaGraph area_graph;
     area_graph.init_from_rectangular_area(side, side);
 

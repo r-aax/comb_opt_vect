@@ -106,7 +106,7 @@ Decomposition::paint_incremental()
         back[c] = 0;
     }
 
-#if 0
+#if 1
 
     // Not optimized.
 
@@ -185,10 +185,8 @@ Decomposition::paint_incremental()
 
         if (is_no_color)
         {
-            vincoff = GTH(v0, is_no_color, vn, incoff);
-
             SCT(domains, is_no_color, vn, vc);
-
+            vincoff = GTH(v0, is_no_color, vn, incoff);
             vcnt = GTH(v0, is_no_color, vincoff, inc[0]);
             vj = v1;
             is_ngh = CMPLE(is_no_color, vj, vcnt);
@@ -196,11 +194,8 @@ Decomposition::paint_incremental()
             while (is_ngh)
             {
                 vngh = GTH2(v0, is_ngh, vincoff, vj, inc[0]);
-
-                vb = ADD(vb, is_ngh, vb, v1);
-
                 SCT2(q[0], is_ngh, vqoff, vb, vngh);
-
+                vb = ADD(vb, is_ngh, vb, v1);
                 vj = ADD(v0, is_ngh, vj, v1);
                 is_ngh = CMPLE(is_ngh, vj, vcnt);
             }
