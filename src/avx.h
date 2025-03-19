@@ -71,6 +71,11 @@ _mm512_mask_storeu_epi32(void* mem_addr, __mmask16 k, __m512i a)
     for (int i = 0; i < N; ++i) if (k & (1 << i)) static_cast<int*>(mem_addr)[i] = a[i];
 }
 
+/**
+ * NB!
+ * There is some problem with name _mm512_mask_i32gather_epi32
+ * when using icc compiler.
+ */
 __m512i
 mm512_mask_i32gather_epi32(__m512i src,
                            __mmask16 k,
@@ -86,6 +91,11 @@ mm512_mask_i32gather_epi32(__m512i src,
     return r;
 }
 
+/**
+ * NB!
+ * There is some problem with name _mm512_mask_i32scatter_epi32
+ * when using icc compiler.
+ */
 void
 mm512_mask_i32scatter_epi32(void* base_addr,
                             __mmask16 k,

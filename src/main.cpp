@@ -16,7 +16,7 @@ check_side(int side)
     double no_opt = decomposition.paint_incremental_no_opt();
     int cnt = 1;
 
-    while (no_opt < 0.01)
+    while (no_opt < 0.1)
     {
         no_opt += decomposition.paint_incremental_no_opt();
         ++cnt;
