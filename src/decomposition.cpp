@@ -96,8 +96,8 @@ Decomposition::~Decomposition()
     delete [] back;
 }
 
-void
-Decomposition::paint_incremental()
+double
+Decomposition::paint_incremental_no_opt()
 {
     for (int n = 0; n < nodes_count; ++n)
     {
@@ -113,11 +113,6 @@ Decomposition::paint_incremental()
     }
 
     auto start = system_clock::now();
-
-#ifndef OPT
-
-    // Not optimized.
-    cout << "NO_OPT" << endl;
 
     bool cont = true;
 
@@ -153,7 +148,29 @@ Decomposition::paint_incremental()
         }
     }
 
-#else
+    auto stop = system_clock::now();
+    duration<double> elapsed_seconds = stop - start;
+    
+    return elapsed_seconds.count();
+}
+
+double
+Decomposition::paint_incremental_opt()
+{
+    for (int n = 0; n < nodes_count; ++n)
+    {
+        domains[n] = -1;
+    }
+
+    for (int c = 0; c < colors_count; ++c)
+    {
+        int n = genotype[c];
+        q[c][0] = n;
+        front[c] = 0;
+        back[c] = 0;
+    }
+
+    auto start = system_clock::now();
 
 #define SET1(I) _mm512_set1_epi32(I)
 #define SET(I15, I14, I13, I12, I11, I10, I9, I8, I7, I6, I5, I4, I3, I2, I1, I0) _mm512_set_epi32(I15, I14, I13, I12, I11, I10, I9, I8, I7, I6, I5, I4, I3, I2, I1, I0)
@@ -161,13 +178,10 @@ Decomposition::paint_incremental()
 #define CMPLE(M, A, B) _mm512_mask_cmp_epi32_mask(M, A, B, _MM_CMPINT_LE)
 #define CMPLT(M, A, B) _mm512_mask_cmp_epi32_mask(M, A, B, _MM_CMPINT_LT)
 #define ADD(S, M, A, B) _mm512_mask_add_epi32(S, M, A, B)
-#define GTH(S, M, OFF, A) _mm512_mask_i32gather_epi32(S, M, OFF, A, 1)
+#define GTH(S, M, OFF, A) mm512_mask_i32gather_epi32(S, M, OFF, A, 1)
 #define GTH2(S, M, OFF1, OFF2, A) GTH(S, M, ADD(S, M, OFF1, OFF2), A)
-#define SCT(A, M, OFF, V) _mm512_mask_i32scatter_epi32(A, M, OFF, V, 1)
+#define SCT(A, M, OFF, V) mm512_mask_i32scatter_epi32(A, M, OFF, V, 1)
 #define SCT2(A, M, OFF1, OFF2, V) SCT(A, M, ADD(v0, M, OFF1, OFF2), V)
-
-    // Optimized.
-    cout << "OPT" << endl;
 
     // locals
     __m512i vn = SET1(0);
@@ -215,11 +229,10 @@ Decomposition::paint_incremental()
         is_q = CMPLE(is_q, vf, vb);
     }
 
-#endif
-
     auto stop = system_clock::now();
     duration<double> elapsed_seconds = stop - start;
-    cout << elapsed_seconds.count() << endl;
+    
+    return elapsed_seconds.count();
 }
 
 void

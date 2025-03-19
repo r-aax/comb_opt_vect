@@ -31,8 +31,11 @@ public:
 
     ~Decomposition();
 
-    void
-    paint_incremental();
+    double
+    paint_incremental_no_opt();
+
+    double
+    paint_incremental_opt();
 
     void
     print(int count_in_row);
