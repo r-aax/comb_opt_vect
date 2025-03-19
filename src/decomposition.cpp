@@ -146,43 +146,50 @@ Decomposition::paint_incremental()
 
 #else
 
+#define SET1(I) _mm512_set1_epi32(I)
+#define SET(I15, I14, I13, I12, I11, I10, I9, I8, I7, I6, I5, I4, I3, I2, I1, I0) _mm512_set_epi32(I15, I14, I13, I12, I11, I10, I9, I8, I7, I6, I5, I4, I3, I2, I1, I0)
+#define LD(A) _mm512_loadu_epi32(A)
+#define CMPLE(M, A, B) _mm512_mask_cmp_epi32_mask(M, A, B, _MM_CMPINT_LE)
+#define CMPLT(M, A, B) _mm512_mask_cmp_epi32_mask(M, A, B, _MM_CMPINT_LT)
+#define ADD(S, M, A, B) _mm512_mask_add_epi32(S, M, A, B)
+
     // Optimized.
 
-    __m512i v0 = _mm512_set1_epi32(0);
-    __m512i v1 = _mm512_set1_epi32(1);
-    __m512i vc = _mm512_set_epi32(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
-    __m512i vf = _mm512_loadu_epi32(front);
-    __m512i vb = _mm512_loadu_epi32(back);
-    __m512i vq_off = _mm512_loadu_epi32(q_off);
-    __mmask16 is_q = _mm512_cmp_epi32_mask(vf, vb, _MM_CMPINT_LE);
+    __m512i v0 = SET1(0);
+    __m512i v1 = SET1(1);
+    __m512i vc = SET(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+    __m512i vf = LD(front);
+    __m512i vb = LD(back);
+    __m512i vq_off = LD(q_off);
+    __mmask16 is_q = CMPLE(0xFFFF, vf, vb);
 
     while (is_q)
     {
-        __m512i vn = _mm512_mask_i32gather_epi32(v0, is_q, _mm512_mask_add_epi32(v0, is_q, vq_off, vf), q[0], 1);
+        __m512i vn = _mm512_mask_i32gather_epi32(v0, is_q, ADD(v0, is_q, vq_off, vf), q[0], 1);
         __m512i vd = _mm512_mask_i32gather_epi32(v0, is_q, vn, domains, 1);
-        __mmask16 is_no_color = _mm512_cmp_epi32_mask(vd, v0, _MM_CMPINT_LT);
+        __mmask16 is_no_color = CMPLT(0xFFFF, vd, v0);
         __m512i vinc_off = _mm512_mask_i32gather_epi32(v0, is_no_color, vn, inc_off, 1);
 
         _mm512_mask_i32scatter_epi32(domains, is_no_color, vn, vc, 1);
 
         __m512i vnghs_count = _mm512_mask_i32gather_epi32(v0, is_no_color, vinc_off, inc[0], 1);
         __m512i vj = v1;
-        __mmask16 is_ngh = _mm512_mask_cmp_epi32_mask(is_no_color, vj, vnghs_count, _MM_CMPINT_LE);
+        __mmask16 is_ngh = CMPLE(is_no_color, vj, vnghs_count);
 
         while (is_ngh)
         {
-            __m512i vngh = _mm512_mask_i32gather_epi32(v0, is_ngh, _mm512_add_epi32(vinc_off, vj), inc[0], 1);
+            __m512i vngh = _mm512_mask_i32gather_epi32(v0, is_ngh, ADD(v0, 0xFFFF, vinc_off, vj), inc[0], 1);
 
             vb = _mm512_mask_add_epi32(vb, is_ngh, vb, v1);
 
-            _mm512_mask_i32scatter_epi32(q[0], is_ngh, _mm512_mask_add_epi32(v0, is_ngh, vq_off, vb), vngh, 1);
+            _mm512_mask_i32scatter_epi32(q[0], is_ngh, ADD(v0, is_ngh, vq_off, vb), vngh, 1);
 
             vj = _mm512_add_epi32(vj, v1);
-            is_ngh = _mm512_mask_cmp_epi32_mask(is_no_color, vj, vnghs_count, _MM_CMPINT_LE);
+            is_ngh = CMPLE(is_no_color, vj, vnghs_count);
         }
 
-        vf = _mm512_mask_add_epi32(vf, is_q, vf, v1);
-        is_q = _mm512_cmp_epi32_mask(vf, vb, _MM_CMPINT_LE);
+        vf = ADD(vf, is_q, vf, v1);
+        is_q = CMPLE(0xFFFF, vf, vb);
     }
 
 #endif
