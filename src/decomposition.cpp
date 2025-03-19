@@ -153,17 +153,11 @@ Decomposition::paint_incremental()
 #define CMPLT(M, A, B) _mm512_mask_cmp_epi32_mask(M, A, B, _MM_CMPINT_LT)
 #define ADD(S, M, A, B) _mm512_mask_add_epi32(S, M, A, B)
 #define GTH(S, M, OFF, A) _mm512_mask_i32gather_epi32(S, M, OFF, A, 1)
+#define GTH2(S, M, OFF1, OFF2, A) GTH(S, M, ADD(S, M, OFF1, OFF2), A)
 #define SCT(A, M, OFF, V) _mm512_mask_i32scatter_epi32(A, M, OFF, V, 1)
+#define SCT2(A, M, OFF1, OFF2, V) SCT(A, M, ADD(v0, M, OFF1, OFF1), V)
 
     // Optimized.
-
-    __m512i v0 = SET1(0);
-    __m512i v1 = SET1(1);
-    __m512i vc = SET(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
-    __m512i vf = LD(front);
-    __m512i vb = LD(back);
-    __m512i vqoff = LD(qoff);
-    __mmask16 is_q = CMPLE(0xFFFF, vf, vb);
 
     // locals
     __m512i vn = SET1(0);
@@ -175,33 +169,44 @@ Decomposition::paint_incremental()
     __mmask16 is_no_color;
     __mmask16 is_ngh;
 
+    __m512i v0 = SET1(0);
+    __m512i v1 = SET1(1);
+    __m512i vc = SET(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+    __m512i vf = LD(front);
+    __m512i vb = LD(back);
+    __m512i vqoff = LD(qoff);
+    __mmask16 is_q = CMPLE(0xFFFF, vf, vb);
+
     while (is_q)
     {
-        vn = GTH(v0, is_q, ADD(v0, is_q, vqoff, vf), q[0]);
+        vn = GTH2(v0, is_q, vqoff, vf, q[0]);
         vd = GTH(v0, is_q, vn, domains);
         is_no_color = CMPLT(is_q, vd, v0);
 
-        vincoff = GTH(v0, is_no_color, vn, incoff);
-
-        SCT(domains, is_no_color, vn, vc);
-
-        vcnt = GTH(v0, is_no_color, vincoff, inc[0]);
-        vj = v1;
-        is_ngh = CMPLE(is_no_color, vj, vcnt);
-
-        while (is_ngh)
+        if (is_no_color)
         {
-            vngh = GTH(v0, is_ngh, ADD(v0, is_ngh, vincoff, vj), inc[0]);
+            vincoff = GTH(v0, is_no_color, vn, incoff);
 
-            vb = ADD(vb, is_ngh, vb, v1);
+            SCT(domains, is_no_color, vn, vc);
 
-            SCT(q[0], is_ngh, ADD(v0, is_ngh, vqoff, vb), vngh);
+            vcnt = GTH(v0, is_no_color, vincoff, inc[0]);
+            vj = v1;
+            is_ngh = CMPLE(is_no_color, vj, vcnt);
 
-            vj = ADD(v0, is_ngh, vj, v1);
-            is_ngh = CMPLE(is_ngh, vj, vcnt);
+            while (is_ngh)
+            {
+                vngh = GTH2(v0, is_ngh, vincoff, vj, inc[0]);
+
+                vb = ADD(vb, is_ngh, vb, v1);
+
+                SCT(q[0], is_ngh, ADD(v0, is_ngh, vqoff, vb), vngh);
+
+                vj = ADD(v0, is_ngh, vj, v1);
+                is_ngh = CMPLE(is_ngh, vj, vcnt);
+            }
         }
 
-        vf = ADD(vf, is_q, vf, v1);
+        vf = ADD(v0, is_q, vf, v1);
         is_q = CMPLE(is_q, vf, vb);
     }
 
