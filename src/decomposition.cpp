@@ -158,8 +158,7 @@ Decomposition::paint_incremental()
 
     while (is_q)
     {
-        __m512i voff = _mm512_mask_add_epi32(v0, is_q, vq_off, vf);
-        __m512i vn = _mm512_mask_i32gather_epi32(v0, is_q, voff, q[0], 1);
+        __m512i vn = _mm512_mask_i32gather_epi32(v0, is_q, _mm512_mask_add_epi32(v0, is_q, vq_off, vf), q[0], 1);
         __m512i vd = _mm512_mask_i32gather_epi32(v0, is_q, vn, domains, 1);
         __mmask16 is_no_color = _mm512_cmp_epi32_mask(vd, v0, _MM_CMPINT_LT);
         __m512i vinc_off = _mm512_mask_i32gather_epi32(v0, is_no_color, vn, inc_off, 1);
@@ -170,21 +169,15 @@ Decomposition::paint_incremental()
         __m512i vj = v1;
         __mmask16 is_ngh = _mm512_mask_cmp_epi32_mask(is_no_color, vj, vnghs_count, _MM_CMPINT_LE);
 
-        int j = 1;
-
         while (is_ngh)
         {
-            __m512i v_loc_off = _mm512_add_epi32(vinc_off, vj);
-            __m512i vngh = _mm512_mask_i32gather_epi32(v0, is_ngh, v_loc_off, inc[0], 1);
+            __m512i vngh = _mm512_mask_i32gather_epi32(v0, is_ngh, _mm512_add_epi32(vinc_off, vj), inc[0], 1);
 
             vb = _mm512_mask_add_epi32(vb, is_ngh, vb, v1);
 
-            __m512i voff2 = _mm512_mask_add_epi32(v0, is_ngh, vq_off, vb);
-
-            _mm512_mask_i32scatter_epi32(q[0], is_ngh, voff2, vngh, 1);
+            _mm512_mask_i32scatter_epi32(q[0], is_ngh, _mm512_mask_add_epi32(v0, is_ngh, vq_off, vb), vngh, 1);
 
             vj = _mm512_add_epi32(vj, v1);
-            ++j;
             is_ngh = _mm512_mask_cmp_epi32_mask(is_no_color, vj, vnghs_count, _MM_CMPINT_LE);
         }
 
