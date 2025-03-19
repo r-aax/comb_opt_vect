@@ -51,10 +51,10 @@ Decomposition::Decomposition(AreaGraph& g,
     {
         q[i] = new int[nodes_count];
     }
-    q_off = new int[colors_count];
+    qoff = new int[colors_count];
     for (int i = 0; i < colors_count; ++i)
     {
-        q_off[i] = q[i] - q[0];
+        qoff[i] = q[i] - q[0];
     }
     front = new int[colors_count];
     back = new int[colors_count];
@@ -85,7 +85,7 @@ Decomposition::~Decomposition()
         delete [] q[i];
     }
     delete [] q;
-    delete [] q_off;
+    delete [] qoff;
     delete [] front;
     delete [] back;
 }
@@ -152,6 +152,8 @@ Decomposition::paint_incremental()
 #define CMPLE(M, A, B) _mm512_mask_cmp_epi32_mask(M, A, B, _MM_CMPINT_LE)
 #define CMPLT(M, A, B) _mm512_mask_cmp_epi32_mask(M, A, B, _MM_CMPINT_LT)
 #define ADD(S, M, A, B) _mm512_mask_add_epi32(S, M, A, B)
+#define GTH(S, M, OFF, A) _mm512_mask_i32gather_epi32(S, M, OFF, A, 1)
+#define SCT(A, M, OFF, V) _mm512_mask_i32scatter_epi32(A, M, OFF, V, 1)
 
     // Optimized.
 
@@ -160,36 +162,46 @@ Decomposition::paint_incremental()
     __m512i vc = SET(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
     __m512i vf = LD(front);
     __m512i vb = LD(back);
-    __m512i vq_off = LD(q_off);
+    __m512i vqoff = LD(qoff);
     __mmask16 is_q = CMPLE(0xFFFF, vf, vb);
+
+    // locals
+    __m512i vn = SET1(0);
+    __m512i vd = SET1(0);
+    __m512i vj = SET1(0);
+    __m512i vcnt = SET1(0);
+    __m512i vngh = SET1(0);
+    __mmask16 is_no_color;
+    __mmask16 is_ngh;
 
     while (is_q)
     {
-        __m512i vn = _mm512_mask_i32gather_epi32(v0, is_q, ADD(v0, is_q, vq_off, vf), q[0], 1);
-        __m512i vd = _mm512_mask_i32gather_epi32(v0, is_q, vn, domains, 1);
-        __mmask16 is_no_color = CMPLT(0xFFFF, vd, v0);
-        __m512i vinc_off = _mm512_mask_i32gather_epi32(v0, is_no_color, vn, inc_off, 1);
+        vn = GTH(v0, is_q, ADD(v0, is_q, vqoff, vf), q[0]);
+        vd = GTH(v0, is_q, vn, domains);
+        is_no_color = CMPLT(is_q, vd, v0);
 
-        _mm512_mask_i32scatter_epi32(domains, is_no_color, vn, vc, 1);
+        __m512i vinc_off = GTH(v0, is_no_color, vn, inc_off);
 
-        __m512i vnghs_count = _mm512_mask_i32gather_epi32(v0, is_no_color, vinc_off, inc[0], 1);
-        __m512i vj = v1;
-        __mmask16 is_ngh = CMPLE(is_no_color, vj, vnghs_count);
+        SCT(domains, is_no_color, vn, vc);
+
+        vcnt = GTH(v0, is_no_color, vinc_off, inc[0]);
+        vj = v1;
+        is_ngh = CMPLE(is_no_color, vj, vcnt);
 
         while (is_ngh)
         {
-            __m512i vngh = _mm512_mask_i32gather_epi32(v0, is_ngh, ADD(v0, 0xFFFF, vinc_off, vj), inc[0], 1);
+            vngh = GTH(v0, is_ngh, ADD(v0, is_ngh, vinc_off, vj), inc[0]);
 
-            vb = _mm512_mask_add_epi32(vb, is_ngh, vb, v1);
+            vb = ADD(vb, is_ngh, vb, v1);
 
-            _mm512_mask_i32scatter_epi32(q[0], is_ngh, ADD(v0, is_ngh, vq_off, vb), vngh, 1);
+            SCT(q[0], is_ngh, ADD(v0, is_ngh, vqoff, vb), vngh);
 
-            vj = _mm512_add_epi32(vj, v1);
-            is_ngh = CMPLE(is_no_color, vj, vnghs_count);
+            vj = ADD(v0, is_ngh, vj, v1);
+            is_ngh = CMPLE(is_ngh, vj, vcnt);
         }
 
         vf = ADD(vf, is_q, vf, v1);
-        is_q = CMPLE(0xFFFF, vf, vb);
+        is_q = CMPLE(is_q, vf, vb);
     }
 
 #endif
