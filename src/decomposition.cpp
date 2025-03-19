@@ -1,11 +1,17 @@
 #include "decomposition.h"
 
 #include <iostream>
+#include <chrono>
 
 #include "utils.h"
-#include "avx.h"
 
-using namespace std;
+#ifdef VEC
+#include <immintrin.h>
+#else
+#include "avx.h"
+#endif
+
+using namespace std::chrono;
 
 Decomposition::Decomposition(AreaGraph& g,
                              int colors_count_)
@@ -106,9 +112,12 @@ Decomposition::paint_incremental()
         back[c] = 0;
     }
 
-#if 1
+    auto start = system_clock::now();
+
+#ifndef OPT
 
     // Not optimized.
+    cout << "NO_OPT" << endl;
 
     bool cont = true;
 
@@ -158,6 +167,7 @@ Decomposition::paint_incremental()
 #define SCT2(A, M, OFF1, OFF2, V) SCT(A, M, ADD(v0, M, OFF1, OFF2), V)
 
     // Optimized.
+    cout << "OPT" << endl;
 
     // locals
     __m512i vn = SET1(0);
@@ -207,6 +217,9 @@ Decomposition::paint_incremental()
 
 #endif
 
+    auto stop = system_clock::now();
+    duration<double> elapsed_seconds = stop - start;
+    cout << elapsed_seconds.count() << endl;
 }
 
 void
