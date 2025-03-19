@@ -152,10 +152,10 @@ Decomposition::paint_incremental()
                                      q[7] - q[0],  q[6] - q[0],  q[5] - q[0],  q[4] - q[0],
                                      q[3] - q[0],  q[2] - q[0],  q[1] - q[0],  0);
     __m512i vf = _mm512_loadu_epi32(front);
+    __m512i vb = _mm512_loadu_epi32(back);
 
     while (true)
     {
-        __m512i vb = _mm512_loadu_epi32(back);
         __mmask16 is_q = _mm512_cmp_epi32_mask(vf, vb, _MM_CMPINT_LE);
 
         if (!is_q)
@@ -201,14 +201,15 @@ Decomposition::paint_incremental()
             __m512i v_loc_off = _mm512_add_epi32(vinc_off, vj);
             __m512i vngh = _mm512_mask_i32gather_epi32(v0, is_ngh, v_loc_off, inc[0], 1);
 
+            vb = _mm512_mask_add_epi32(vb, is_ngh, vb, v1);
+
             for (int c = 0; c < colors_count; ++c)
             {
                 if (is_ngh & (1 << c))
                 {
                     int ngh = vngh[c];//inc[vn[c]][j];
 
-                    back[c]++;
-                    q[c][back[c]] = ngh;
+                    q[c][vb[c]] = ngh;
                 }
             }
 
