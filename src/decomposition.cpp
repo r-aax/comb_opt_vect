@@ -23,10 +23,10 @@ Decomposition::Decomposition(AreaGraph& g,
             inc[i][j + 1] = g.inc[i][j];
         }
     }
-    inc_off = new int[nodes_count];
+    incoff = new int[nodes_count];
     for (int i = 0; i < nodes_count; ++i)
     {
-        inc_off[i] = inc[i] - inc[0];
+        incoff[i] = inc[i] - inc[0];
     }
     es = new int*[edges_count];
     for (int i = 0; i < edges_count; ++i)
@@ -68,7 +68,7 @@ Decomposition::~Decomposition()
         delete [] inc[i];
     }
     delete [] inc;
-    delete [] inc_off;
+    delete [] incoff;
     for (int i = 0; i < edges_count; ++i)
     {
         delete [] es[i];
@@ -171,6 +171,7 @@ Decomposition::paint_incremental()
     __m512i vj = SET1(0);
     __m512i vcnt = SET1(0);
     __m512i vngh = SET1(0);
+    __m512i vincoff = SET1(0);
     __mmask16 is_no_color;
     __mmask16 is_ngh;
 
@@ -180,17 +181,17 @@ Decomposition::paint_incremental()
         vd = GTH(v0, is_q, vn, domains);
         is_no_color = CMPLT(is_q, vd, v0);
 
-        __m512i vinc_off = GTH(v0, is_no_color, vn, inc_off);
+        vincoff = GTH(v0, is_no_color, vn, incoff);
 
         SCT(domains, is_no_color, vn, vc);
 
-        vcnt = GTH(v0, is_no_color, vinc_off, inc[0]);
+        vcnt = GTH(v0, is_no_color, vincoff, inc[0]);
         vj = v1;
         is_ngh = CMPLE(is_no_color, vj, vcnt);
 
         while (is_ngh)
         {
-            vngh = GTH(v0, is_ngh, ADD(v0, is_ngh, vinc_off, vj), inc[0]);
+            vngh = GTH(v0, is_ngh, ADD(v0, is_ngh, vincoff, vj), inc[0]);
 
             vb = ADD(vb, is_ngh, vb, v1);
 

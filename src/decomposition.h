@@ -12,7 +12,7 @@ public:
     int nodes_count { 0 };
     int edges_count { 0 };
     int** inc;
-    int* inc_off;
+    int* incoff;
     int** es;
 
     // painting
