@@ -178,9 +178,9 @@ Decomposition::paint_incremental_opt()
 #define CMPLE(M, A, B) _mm512_mask_cmp_epi32_mask(M, A, B, _MM_CMPINT_LE)
 #define CMPLT(M, A, B) _mm512_mask_cmp_epi32_mask(M, A, B, _MM_CMPINT_LT)
 #define ADD(S, M, A, B) _mm512_mask_add_epi32(S, M, A, B)
-#define GTH(S, M, OFF, A) mm512_mask_i32gather_epi32(S, M, OFF, A, 1)
+#define GTH(S, M, OFF, A) _mm512_mask_i32gather_epi32(S, M, OFF, A, 1)
 #define GTH2(S, M, OFF1, OFF2, A) GTH(S, M, ADD(S, M, OFF1, OFF2), A)
-#define SCT(A, M, OFF, V) mm512_mask_i32scatter_epi32(A, M, OFF, V, 1)
+#define SCT(A, M, OFF, V) _mm512_mask_i32scatter_epi32(A, M, OFF, V, 1)
 #define SCT2(A, M, OFF1, OFF2, V) SCT(A, M, ADD(v0, M, OFF1, OFF2), V)
 
     // locals
