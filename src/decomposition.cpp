@@ -167,33 +167,14 @@ Decomposition::paint_incremental()
         __m512i vn = _mm512_mask_i32gather_epi32(v0, is_q, voff, q[0], 1);
         __m512i vd = _mm512_mask_i32gather_epi32(v0, is_q, vn, domains, 1);
         __mmask16 is_no_color = _mm512_cmp_epi32_mask(vd, v0, _MM_CMPINT_LT);
-
-        cout << endl << "iter" << endl;
-        print_mask(is_q);
-        cout << "vf : ";
-        print_vec(vf);
-        cout << "voff : ";
-        print_vec(voff);
-        cout << "vn : ";
-        print_vec(vn);
-        cout << "vd : ";
-        print_vec(vd);
-        print_mask(is_no_color);
-
         __m512i vinc_off = _mm512_mask_i32gather_epi32(v0, is_no_color, vn, inc_off, 1);
-        cout << "vinc_off : ";
-        print_vec(vinc_off);
 
         _mm512_mask_i32scatter_epi32(domains, is_no_color, vn, vc, 1);
 
         __m512i vnghs_count = _mm512_mask_i32gather_epi32(v0, is_no_color, vinc_off, inc[0], 1);
-        cout << "vnghs_count : ";
-        print_vec(vnghs_count);
-
         __m512i vj = v1;
         __mmask16 is_ngh = _mm512_mask_cmp_epi32_mask(is_no_color, vj, vnghs_count, _MM_CMPINT_LE);
-        cout << "is_ngh : ";
-        print_mask(is_ngh);
+
         int j = 1;
 
         while (is_ngh)
@@ -206,24 +187,10 @@ Decomposition::paint_incremental()
             __m512i voff2 = _mm512_mask_add_epi32(v0, is_ngh, vqoff, vb);
 
             _mm512_mask_i32scatter_epi32(q[0], is_ngh, voff2, vngh, 1);
-            //_mm512_mask_i32gather_epi32(v0, is_q, voff, q[0], 1);
-
-
-            //for (int c = 0; c < colors_count; ++c)
-            //{
-              //  if (is_ngh & (1 << c))
-                //{
-                  //  int ngh = vngh[c];//inc[vn[c]][j];
-
-                    //q[c][vb[c]] = ngh;
-                //}
-            //}
 
             vj = _mm512_add_epi32(vj, v1);
             ++j;
             is_ngh = _mm512_mask_cmp_epi32_mask(is_no_color, vj, vnghs_count, _MM_CMPINT_LE);
-            cout << "is_ngh : ";
-            print_mask(is_ngh);
         }
 
         vf = _mm512_mask_add_epi32(vf, is_q, vf, v1);
