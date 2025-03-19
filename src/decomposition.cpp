@@ -51,6 +51,11 @@ Decomposition::Decomposition(AreaGraph& g,
     {
         q[i] = new int[nodes_count];
     }
+    q_off = new int[colors_count];
+    for (int i = 0; i < colors_count; ++i)
+    {
+        q_off[i] = q[i] - q[0];
+    }
     front = new int[colors_count];
     back = new int[colors_count];
 }
@@ -80,6 +85,7 @@ Decomposition::~Decomposition()
         delete [] q[i];
     }
     delete [] q;
+    delete [] q_off;
     delete [] front;
     delete [] back;
 }
@@ -138,19 +144,14 @@ Decomposition::paint_incremental()
         }
     }
 
-#endif
-
-#if 1
+#else
 
     // Optimized.
 
     __m512i v0 = _mm512_set1_epi32(0);
     __m512i v1 = _mm512_set1_epi32(1);
     __m512i vc = _mm512_set_epi32(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
-    __m512i vqoff = _mm512_set_epi32(q[15] - q[0], q[14] - q[0], q[13] - q[0], q[12] - q[0],
-                                     q[11] - q[0], q[10] - q[0], q[9] - q[0],  q[8] - q[0],
-                                     q[7] - q[0],  q[6] - q[0],  q[5] - q[0],  q[4] - q[0],
-                                     q[3] - q[0],  q[2] - q[0],  q[1] - q[0],  0);
+    __m512i vq_off = _mm512_loadu_epi32(q_off);
     __m512i vf = _mm512_loadu_epi32(front);
     __m512i vb = _mm512_loadu_epi32(back);
 
@@ -163,7 +164,7 @@ Decomposition::paint_incremental()
             break;
         }
 
-        __m512i voff = _mm512_mask_add_epi32(v0, is_q, vqoff, vf);
+        __m512i voff = _mm512_mask_add_epi32(v0, is_q, vq_off, vf);
         __m512i vn = _mm512_mask_i32gather_epi32(v0, is_q, voff, q[0], 1);
         __m512i vd = _mm512_mask_i32gather_epi32(v0, is_q, vn, domains, 1);
         __mmask16 is_no_color = _mm512_cmp_epi32_mask(vd, v0, _MM_CMPINT_LT);
@@ -184,7 +185,7 @@ Decomposition::paint_incremental()
 
             vb = _mm512_mask_add_epi32(vb, is_ngh, vb, v1);
 
-            __m512i voff2 = _mm512_mask_add_epi32(v0, is_ngh, vqoff, vb);
+            __m512i voff2 = _mm512_mask_add_epi32(v0, is_ngh, vq_off, vb);
 
             _mm512_mask_i32scatter_epi32(q[0], is_ngh, voff2, vngh, 1);
 

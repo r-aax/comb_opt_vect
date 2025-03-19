@@ -22,6 +22,7 @@ public:
 
     // queue
     int** q;
+    int* q_off;
     int* front;
     int* back;
 
