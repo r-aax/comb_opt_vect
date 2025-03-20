@@ -3,10 +3,12 @@
 
 #include <iostream>
 
+#include "avx.h"
+
 using namespace std;
 
 void
-check_side(int side)
+calculate_speedup(int side)
 {
     AreaGraph area_graph;
     area_graph.init_from_rectangular_area(side, side);
@@ -34,19 +36,56 @@ check_side(int side)
          << ", speedup = " << (no_opt / opt) << endl;
 }
 
+void
+collect_statistics(int side)
+{
+    AreaGraph area_graph;
+    area_graph.init_from_rectangular_area(side, side);
+
+    Decomposition decomposition(area_graph, 16);
+
+    zero_stat();
+    decomposition.paint_incremental_opt();
+
+    cout << "side = " << side
+         << ", ath = " << (static_cast<double>(ath_exe) / ath_cnt)
+         << ", cmp = " << (static_cast<double>(cmp_exe) / cmp_cnt)
+         << ", gth = " << (static_cast<double>(gth_exe) / gth_cnt)
+         << ", sct = " << (static_cast<double>(sct_exe) / sct_cnt)
+         << endl;
+}
+
 int
 main(int argc, char** argv)
 {
-    srand(static_cast<unsigned int>(time({})));
+    int start = (argc == 1) ? 20 : atoi(argv[1]);
+    int stop { 2000 };
 
-    int start = (argc == 1) ? 1020 : atoi(argv[1]);
+    srand(static_cast<unsigned int>(time({})));
 
     cout << "start = " << start << endl;
 
-    for (int side = start; side <= 2000; side += 20)
+#if 0
+
+    // Run on real machine to measure speedup.
+
+    for (int side = start; side <= stop; side += 20)
     {
-        check_side(side);
+        calculate_speedup(side);
     }
+
+#endif
+
+#if 1
+
+    // Run in simulation mode for collec masks density statistics.
+
+    for (int side = start; side <= stop; side += 20)
+    {
+        collect_statistics(side);
+    }
+
+#endif
 
     return 0;
 }

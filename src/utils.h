@@ -9,7 +9,8 @@ using namespace std;
 /// 
 /// </summary>
 /// <returns></returns>
-inline int randint()
+inline int
+randint()
 {
     return abs(rand() ^ (rand() << 16));
 }
@@ -20,8 +21,9 @@ inline int randint()
 /// <param name="a"></param>
 /// <param name="b"></param>
 /// <returns></returns>
-inline int randint(int a,
-                   int b)
+inline int
+randint(int a,
+        int b)
 {
     return a + randint() % (b - a + 1);
 }
@@ -31,7 +33,8 @@ inline int randint(int a,
 /// </summary>
 /// <param name="n"></param>
 /// <returns></returns>
-inline int randint(int n)
+inline int
+randint(int n)
 {
     return randint(0, n - 1);
 }
@@ -40,7 +43,8 @@ inline int randint(int n)
 /// 
 /// </summary>
 /// <returns></returns>
-inline bool randbool()
+inline bool
+randbool()
 {
     return randint(0, 1) == 0;
 }
@@ -49,7 +53,8 @@ inline bool randbool()
 /// 
 /// </summary>
 /// <returns></returns>
-inline double rand01()
+inline double
+rand01()
 {
     return static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
 }
@@ -59,9 +64,24 @@ inline double rand01()
 /// </summary>
 /// <param name="prob"></param>
 /// <returns></returns>
-inline bool randbool(double prob)
+inline bool
+randbool(double prob)
 {
     return rand01() < prob;
+}
+
+inline int
+popcnt(uint32_t i)
+{
+    int r { 0 };
+
+    while (i)
+    {
+        r += (i & 0x1);
+        i >>= 1;
+    }
+
+    return r;
 }
 
 #endif
