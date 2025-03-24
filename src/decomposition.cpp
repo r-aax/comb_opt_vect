@@ -274,13 +274,13 @@ Decomposition::paint_incremental_opt()
 
                 // cout << "PIO : iter is_ngh : vngh : "; print_m512i(vngh);
 
-                SCT2(q[0], is_ngh, vqoff, vb, vngh);
-
-                // cout << "PIO : iter is_ngh : SCT q" << endl;
-
                 vb = ADD(vb, is_ngh, vb, v1);
 
                 // cout << "PIO : iter is_ngh : vb : "; print_m512i(vb);
+
+                SCT2(q[0], is_ngh, vqoff, vb, vngh);
+
+                // cout << "PIO : iter is_ngh : SCT q" << endl;
 
                 vj = ADD(v0, is_ngh, vj, v1);
 
