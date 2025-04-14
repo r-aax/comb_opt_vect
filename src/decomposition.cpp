@@ -211,7 +211,7 @@ Decomposition::paint_incremental_opt()
     __m512i vcnt = SET1(0);
     __m512i vngh = SET1(0);
     __m512i vincoff = SET1(0);
-    __mmask16 is_no_color;
+    __mmask16 is_no_domain;
     __mmask16 is_ngh;
 
     // cout << "PIO : locals done" << endl;
@@ -238,33 +238,33 @@ Decomposition::paint_incremental_opt()
 
         // cout << "PIO : iter is_q : vd : "; print_m512i(vd);
 
-        is_no_color = CMPLT(is_q, vd, v0);
+        is_no_domain = CMPLT(is_q, vd, v0);
 
-        // cout << "PIO : iter is_q : is_no_color : "; print_mmask16(is_no_color);
+        // cout << "PIO : iter is_q : is_no_domain : "; print_mmask16(is_no_domain);
 
-        if (is_no_color)
+        if (is_no_domain)
         {
-            // cout << "PIO : iter is_no_color : enter" << endl;
+            // cout << "PIO : iter is_no_domain : enter" << endl;
 
-            SCT(domains, is_no_color, vn, vc);
+            SCT(domains, is_no_domain, vn, vc);
 
-            // cout << "PIO : iter is_no_color : SCT domains" << endl;
+            // cout << "PIO : iter is_no_domain : SCT domains" << endl;
 
-            vincoff = GTH(v0, is_no_color, vn, incoff);
+            vincoff = GTH(v0, is_no_domain, vn, incoff);
 
-            // cout << "PIO : iter is_no_color : vincoff : "; print_m512i(vincoff);
+            // cout << "PIO : iter is_no_domain : vincoff : "; print_m512i(vincoff);
 
-            vcnt = GTH(v0, is_no_color, vincoff, inc[0]);
+            vcnt = GTH(v0, is_no_domain, vincoff, inc[0]);
 
-            // cout << "PIO : iter is_no_color : vcnt : "; print_m512i(vcnt);
+            // cout << "PIO : iter is_no_domain : vcnt : "; print_m512i(vcnt);
 
             vj = v1;
 
-            // cout << "PIO : iter is_no_color : vj : "; print_m512i(vj);
+            // cout << "PIO : iter is_no_domain : vj : "; print_m512i(vj);
 
-            is_ngh = CMPLE(is_no_color, vj, vcnt);
+            is_ngh = CMPLE(is_no_domain, vj, vcnt);
 
-            // cout << "PIO : iter is_no_color : is_ngh : "; print_mmask16(is_ngh);
+            // cout << "PIO : iter is_no_domain : is_ngh : "; print_mmask16(is_ngh);
 
             while (is_ngh)
             {
