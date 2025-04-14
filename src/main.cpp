@@ -65,7 +65,7 @@ main(int argc, char** argv)
 
     cout << "start = " << start << endl;
 
-#if 0
+#ifdef SPEEDUP
 
     // Run on real machine to measure speedup.
 
@@ -76,7 +76,7 @@ main(int argc, char** argv)
 
 #endif
 
-#if 1
+#ifdef STATISTICS
 
     // Run in simulation mode for collec masks density statistics.
 

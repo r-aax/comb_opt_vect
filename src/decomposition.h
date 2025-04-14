@@ -16,7 +16,7 @@ public:
     int** es;
 
     // painting
-    int colors_count { 0 };
+    int domains_count { 0 };
     int* genotype;
     int* domains;
 
@@ -27,7 +27,7 @@ public:
     int* back;
 
     Decomposition(AreaGraph& g_,
-                  int colors_count_);
+                  int domains_count_);
 
     ~Decomposition();
 

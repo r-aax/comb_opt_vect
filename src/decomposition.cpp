@@ -33,9 +33,9 @@ print_mmask16(__mmask16 m)
 }
 
 Decomposition::Decomposition(AreaGraph& g,
-                             int colors_count_)
+                             int domains_count_)
     : nodes_count { g.nodes_count() },
-      colors_count { colors_count_ }
+      domains_count { domains_count_ }
 {
     // init graph
     inc = new int*[nodes_count];
@@ -62,8 +62,8 @@ Decomposition::Decomposition(AreaGraph& g,
     }
 
     // painting
-    genotype = new int[colors_count];
-    for (int i = 0; i < colors_count; ++i)
+    genotype = new int[domains_count];
+    for (int i = 0; i < domains_count; ++i)
     {
         int r = randint(static_cast<int>(nodes_count));
         genotype[i] = r;
@@ -71,18 +71,18 @@ Decomposition::Decomposition(AreaGraph& g,
     domains = new int[nodes_count];
 
     // queue
-    q = new int*[colors_count];
-    for (int i = 0; i < colors_count; ++i)
+    q = new int*[domains_count];
+    for (int i = 0; i < domains_count; ++i)
     {
         q[i] = new int[nodes_count];
     }
-    qoff = new int[colors_count];
-    for (int i = 0; i < colors_count; ++i)
+    qoff = new int[domains_count];
+    for (int i = 0; i < domains_count; ++i)
     {
         qoff[i] = q[i] - q[0];
     }
-    front = new int[colors_count];
-    back = new int[colors_count];
+    front = new int[domains_count];
+    back = new int[domains_count];
 }
 
 Decomposition::~Decomposition()
@@ -105,7 +105,7 @@ Decomposition::~Decomposition()
     delete [] domains;
 
     // queue
-    for (int i = 0; i < colors_count; ++i)
+    for (int i = 0; i < domains_count; ++i)
     {
         delete [] q[i];
     }
@@ -123,7 +123,7 @@ Decomposition::paint_incremental_no_opt()
         domains[n] = -1;
     }
 
-    for (int c = 0; c < colors_count; ++c)
+    for (int c = 0; c < domains_count; ++c)
     {
         int n = genotype[c];
         q[c][0] = n;
@@ -139,7 +139,7 @@ Decomposition::paint_incremental_no_opt()
     {
         cont = false;
 
-        for (int c = 0; c < colors_count; ++c)
+        for (int c = 0; c < domains_count; ++c)
         {
             if (front[c] <= back[c])
             {
@@ -183,7 +183,7 @@ Decomposition::paint_incremental_opt()
         domains[n] = -1;
     }
 
-    for (int c = 0; c < colors_count; ++c)
+    for (int c = 0; c < domains_count; ++c)
     {
         int n = genotype[c];
         q[c][0] = n;
